@@ -1,0 +1,150 @@
+"""
+SQL validation and security utilities.
+"""
+import re
+from typing import Dict, List, Any
+
+
+class SQLValidator:
+    """
+    Validate SQL queries for security and correctness.
+    """
+
+    # Forbidden SQL keywords
+    FORBIDDEN_KEYWORDS = [
+        "DROP", "DELETE", "UPDATE", "INSERT", "CREATE",
+        "ALTER", "TRUNCATE", "GRANT", "REVOKE", "EXECUTE",
+        "CALL", "MERGE", "REPLACE"
+    ]
+
+    # Allowed query patterns
+    ALLOWED_PREFIXES = ["SELECT", "WITH", "(", "SHOW", "DESCRIBE", "DESC"]
+
+    def __init__(self, max_rows: int = 1000):
+        self.max_rows = max_rows
+
+    def validate(self, query: str) -> Dict[str, Any]:
+        """
+        Comprehensive SQL validation.
+
+        Args:
+            query: SQL query to validate
+
+        Returns:
+            Dictionary with validation results
+        """
+        errors = []
+        warnings = []
+        sanitized_query = query.strip()
+
+        # Check for forbidden keywords
+        forbidden_found = self._check_forbidden_keywords(sanitized_query)
+        if forbidden_found:
+            errors.append(
+                f"Comandos não permitidos encontrados: {', '.join(forbidden_found)}"
+            )
+
+        # Check if query starts with allowed prefix
+        if not self._check_allowed_prefix(sanitized_query):
+            errors.append(
+                "Query deve começar com SELECT, WITH, ou SHOW"
+            )
+
+        # Check for LIMIT clause
+        if not self._has_limit(sanitized_query):
+            warnings.append(
+                "Query sem LIMIT pode retornar muitos registros. "
+                f"Adicionando LIMIT {self.max_rows}"
+            )
+            sanitized_query = self._add_limit(sanitized_query)
+
+        # Check for potential SQL injection patterns
+        injection_patterns = self._check_injection_patterns(sanitized_query)
+        if injection_patterns:
+            warnings.append(
+                f"Padrões suspeitos detectados: {', '.join(injection_patterns)}"
+            )
+
+        # Check for required WHERE clause (for performance)
+        if not self._has_where(sanitized_query) and "FROM" in sanitized_query.upper():
+            warnings.append(
+                "Query sem WHERE pode fazer table scan. "
+                "Recomendado adicionar filtro de ano."
+            )
+
+        return {
+            "is_valid": len(errors) == 0,
+            "errors": errors,
+            "warnings": warnings,
+            "sanitized_query": sanitized_query
+        }
+
+    def _check_forbidden_keywords(self, query: str) -> List[str]:
+        """Check for forbidden SQL keywords."""
+        query_upper = query.upper()
+        found = []
+
+        for keyword in self.FORBIDDEN_KEYWORDS:
+            pattern = rf"\b{keyword}\b"
+            if re.search(pattern, query_upper):
+                found.append(keyword)
+
+        return found
+
+    def _check_allowed_prefix(self, query: str) -> bool:
+        """Check if query starts with allowed prefix."""
+        query_upper = query.upper().strip()
+
+        for prefix in self.ALLOWED_PREFIXES:
+            if query_upper.startswith(prefix):
+                return True
+
+        return False
+
+    def _has_limit(self, query: str) -> bool:
+        """Check if query has LIMIT clause."""
+        return "LIMIT" in query.upper()
+
+    def _add_limit(self, query: str) -> str:
+        """Add LIMIT clause to query."""
+        # Remove trailing semicolon if present
+        query = query.rstrip(";").strip()
+
+        # Add LIMIT
+        return f"{query}\nLIMIT {self.max_rows}"
+
+    def _has_where(self, query: str) -> bool:
+        """Check if query has WHERE clause."""
+        return "WHERE" in query.upper()
+
+    def _check_injection_patterns(self, query: str) -> List[str]:
+        """Check for potential SQL injection patterns."""
+        patterns = [
+            r"';",           # Statement termination
+            r"--",           # SQL comment
+            r"/\*",          # Multi-line comment start
+            r"\bor\s+1\s*=\s*1\b",  # Always true condition
+            r"\bxor\b",      # XOR operator
+            r"union.*select", # UNION injection
+        ]
+
+        found = []
+        query_lower = query.lower()
+
+        for pattern in patterns:
+            if re.search(pattern, query_lower, re.IGNORECASE):
+                found.append(pattern)
+
+        return found
+
+
+# Singleton instance
+_validator_instance: SQLValidator | None = None
+
+
+def get_sql_validator() -> SQLValidator:
+    """Get or create singleton SQLValidator instance."""
+    global _validator_instance
+    if _validator_instance is None:
+        _validator_instance = SQLValidator()
+    return _validator_instance

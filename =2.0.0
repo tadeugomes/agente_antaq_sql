@@ -1,0 +1,7 @@
+Collecting sentry-sdk
+  Downloading sentry_sdk-2.48.0-py2.py3-none-any.whl.metadata (10 kB)
+Requirement already satisfied: urllib3>=1.26.11 in ./venv_new/lib/python3.12/site-packages (from sentry-sdk) (2.6.2)
+Requirement already satisfied: certifi in ./venv_new/lib/python3.12/site-packages (from sentry-sdk) (2025.11.12)
+Downloading sentry_sdk-2.48.0-py2.py3-none-any.whl (414 kB)
+Installing collected packages: sentry-sdk
+Successfully installed sentry-sdk-2.48.0

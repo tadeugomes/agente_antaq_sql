@@ -1,0 +1,33 @@
+# BigQuery Configuration
+
+project_id: antaqdados
+dataset_id: br_antaq_estatistico_aquaviario
+location: US
+
+# IMPORTANT: Use v_carga_metodologia_oficial for official cargo metrics
+# This view applies ANTAQ's official methodology with isValidoMetodologiaANTAQ = 1
+# PRIMARY TABLE: v_carga_metodologia_oficial (cargo metrics)
+#   - vlpesocargabruta_oficial: Gross weight in tons (PRIMARY METRIC)
+#   - qtcarga_oficial: Cargo quantity
+#   - isValidoMetodologiaANTAQ: Always filter with = 1 for official data
+#   - ano: INT64 (use 2024, not '2024')
+#   - mes: INT64 (use 1-12, not '1'-'12')
+
+# Tables to include in schema
+tables:
+  - v_carga_metodologia_oficial  # PRIMARY: Official cargo methodology view
+  - v_atracacao_validada         # Docking/berthing analysis
+  - v_carga_validada             # Validated cargo data
+  - instalacao_origem            # Origin port catalog
+  - instalacao_destino           # Destination port catalog
+  - mercadoria_carga             # Commodity catalog
+
+# Query limits
+max_rows: 1000
+max_bytes_billed: 10737418240  # 10 GB
+timeout_seconds: 60
+
+# Vector Store
+vector_store:
+  table: qa_embeddings
+  embedding_model: textembedding-3-small  # OpenAI

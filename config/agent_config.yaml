@@ -1,0 +1,44 @@
+# Agent Configuration
+
+model:
+  name: gpt-4o-mini  # OpenAI model
+  temperature: 0
+  max_tokens: 2048
+
+# RAG Configuration
+rag:
+  enabled: true
+  top_k: 3
+  similarity_threshold: 0.7
+
+# Security
+security:
+  read_only: true
+  validate_schema: true
+  enforce_limit: true
+  forbidden_keywords:
+    - DROP
+    - DELETE
+    - UPDATE
+    - INSERT
+    - CREATE
+    - ALTER
+    - TRUNCATE
+    - GRANT
+    - REVOKE
+
+# Retry
+retry:
+  max_attempts: 3
+  backoff_seconds: 1
+
+# IMPORTANT SQL Generation Rules
+sql_rules:
+  # Primary table for cargo metrics
+  primary_table: v_carga_metodologia_oficial
+  # Primary metric column
+  primary_metric: vlpesocargabruta_oficial
+  # Required filters
+  required_filters:
+    - isValidoMetodologiaANTAQ = 1  # Official methodology filter
+    - ano = 2024  # Year filter (INT64, no quotes)

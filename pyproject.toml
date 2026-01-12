@@ -1,0 +1,60 @@
+[build-system]
+requires = ["setuptools>=45", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "antaq-ai-agent"
+version = "0.1.0"
+description = "Natural Language to SQL agent for ANTAQ BigQuery data"
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [
+    {name = "ANTAQ AI Team"}
+]
+license = {text = "MIT"}
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+]
+dependencies = [
+    "langgraph>=0.2.0",
+    "langchain>=0.3.0",
+    "langchain-core>=0.3.0",
+    "langchain-google-vertexai>=1.0.0",
+    "langchain-google-community>=1.0.0",
+    "google-cloud-bigquery>=3.0.0",
+    "google-cloud-aiplatform>=1.0.0",
+    "pydantic>=2.0.0",
+    "sqlalchemy>=2.0.0",
+    "python-dotenv>=1.0.0",
+    "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+ui = [
+    "streamlit>=1.28.0",
+    "plotly>=5.18.0",
+]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-asyncio>=0.21.0",
+    "black>=23.0.0",
+    "mypy>=1.6.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/antaq/ai-agent"
+Repository = "https://github.com/antaq/ai-agent"
+
+[tool.black]
+line-length = 100
+target-version = ['py310']
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
