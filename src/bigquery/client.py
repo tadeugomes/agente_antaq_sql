@@ -2,6 +2,7 @@
 BigQuery client wrapper with connection pooling and error handling.
 """
 import os
+import json
 import asyncio
 from typing import List, Dict, Any, Optional
 from google.cloud import bigquery
@@ -34,10 +35,12 @@ class BigQueryClient:
         self.location = location
         self.data_project_id = data_project_id
 
-        # Initialize client with default credentials
+        # Initialize client with credentials from env or Streamlit secrets when available
+        credentials = self._get_credentials()
         self.client = bigquery.Client(
             project=self.project_id,
-            location=self.location
+            location=self.location,
+            credentials=credentials
         )
 
         # Default job config for safety
@@ -46,6 +49,32 @@ class BigQueryClient:
             use_query_cache=True,
             use_legacy_sql=False
         )
+
+    def _get_credentials(self):
+        """
+        Try to load credentials from env or Streamlit secrets.
+        Falls back to ADC when none are provided.
+        """
+        creds_json = os.getenv("GOOGLE_APPLICATION_CREDENTIALS_JSON")
+        if creds_json:
+            try:
+                from google.oauth2 import service_account
+                info = json.loads(creds_json)
+                return service_account.Credentials.from_service_account_info(info)
+            except Exception:
+                pass
+
+        try:
+            import streamlit as st
+            if hasattr(st, "secrets") and "gcp_service_account" in st.secrets:
+                from google.oauth2 import service_account
+                return service_account.Credentials.from_service_account_info(
+                    st.secrets["gcp_service_account"]
+                )
+        except Exception:
+            pass
+
+        return None
 
     def query(
         self,
