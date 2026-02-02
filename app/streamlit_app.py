@@ -22,7 +22,7 @@ from src.agent.graph import create_graph
 from src.utils.security import validate_environment
 
 # Import new components
-from app.components.styles import load_styles, Icons, Colors
+from app.components.styles import load_styles, Colors
 from app.components.base import main_header, info_box
 from app.components.chat_tab import show_chat_tab
 from app.components.overview_tab import show_overview_tab
@@ -113,6 +113,35 @@ def check_environment():
 # Main Application
 # =============================================================================
 
+def _render_help_tab() -> None:
+    """Render the help tab with onboarding content and examples."""
+    st.markdown("### Ajuda")
+    st.markdown(
+        "Faça perguntas em linguagem natural sobre os dados do Estatístico Aquaviário da ANTAQ. "
+        "Inclua o porto, o período e, se possível, o sentido da operação (exportação/importação)."
+    )
+
+    st.markdown("#### Exemplos de perguntas")
+    example_questions = [
+        "Qual foi o total de carga movimentado em agosto de 2024 pelo porto de Paranaguá?",
+        "Quais são os 10 principais portos por tonelagem em 2024?",
+        "Compare exportações e importações por região geográfica em 2024.",
+        "Quanto foi exportado de soja pelo porto de Santos em agosto de 2024?",
+        "Quanto foi importado de fertilizantes pelo porto de Itaqui em novembro de 2024?",
+    ]
+
+    for idx, question in enumerate(example_questions):
+        if st.button(question, key=f"help_example_{idx}", use_container_width=True):
+            st.session_state["pergunta_pending"] = question
+            st.info("Pergunta preenchida na aba Chat. Clique em Consultar.")
+
+    st.markdown("---")
+    st.markdown(
+        "Dica: padronize o período como \"mês de ano\" e o nome do porto como \"porto de X\" "
+        "para obter respostas mais consistentes."
+    )
+
+
 def main():
     """Main application entry point."""
     # Set Sentry context for this session
@@ -161,33 +190,44 @@ def _run_app():
     # Main header
     main_header(
         title="ANTAQ - Dados Aquaviários",
-        subtitle="Consulta em linguagem natural para dados da ANTAQ"
+        subtitle="Consulta em linguagem natural para dados do Estatístico Aquaviário da ANTAQ"
     )
 
     # Data status banner
     latest = SessionManager.get_latest_data_info()
     if latest:
+        cobertura = f"{latest['mes_nome'].lower()} de {latest['ano']}"
         info_box(
-            "Dados Disponíveis",
-            f"Último mês: **{latest['mes_nome']} de {latest['ano']}**",
+            "Dados disponíveis",
+            f"Cobertura: até {cobertura} (dados mensais do Estatístico Aquaviário da ANTAQ).",
+            "info"
+        )
+    else:
+        info_box(
+            "Dados disponíveis",
+            "Cobertura: dados mensais do Estatístico Aquaviário da ANTAQ.",
             "info"
         )
 
     # Main tabs
-    tab1, tab2 = st.tabs([f"{Icons.CHAT_TAB} Chat", f"{Icons.OVERVIEW_TAB} Overview"])
+    tab_chat, tab_overview, tab_help = st.tabs(["Chat", "Overview", "Ajuda"])
 
-    with tab1:
+    with tab_chat:
         show_chat_tab()
 
-    with tab2:
+    with tab_overview:
         show_overview_tab()
+
+    with tab_help:
+        _render_help_tab()
 
     # Footer
     st.markdown("---")
     st.markdown(
         f'<div style="text-align: center; color: {Colors.GRAY_500}; font-size: 0.8rem;">'
         f'Fonte: ANTAQ - Agência Nacional de Transportes Aquaviários | '
-        f'Estatística Aquaviária'
+        f'<a href="https://web3.antaq.gov.br/ea/sense/index.html#" '
+        f'target="_blank" rel="noopener noreferrer">Estatística Aquaviária</a>'
         f'</div>',
         unsafe_allow_html=True
     )

@@ -11,31 +11,43 @@ CUSTOM_CSS = """
    ============================================================================= */
 :root {
     /* Cores Principais */
-    --primary: #0066CC;
-    --primary-dark: #004C99;
-    --primary-light: #E6F0FF;
+    --primary: #3A7BD5;
+    --primary-dark: #2D5FAA;
+    --primary-light: #1E2A3A;
     --secondary: #00A651;
     --warning: #FF9500;
     --danger: #DC3545;
 
     /* Neutros */
-    --gray-50: #F8F9FA;
-    --gray-100: #F1F3F5;
-    --gray-200: #E9ECEF;
-    --gray-500: #ADB5BD;
-    --gray-700: #495057;
-    --gray-900: #212529;
+    --gray-50: #141A21;
+    --gray-100: #1B232D;
+    --gray-200: #263140;
+    --gray-500: #9AA6B2;
+    --gray-700: #D0D7DE;
+    --gray-900: #F2F5F8;
 
     /* Backgrounds */
-    --bg-primary: #FFFFFF;
-    --bg-secondary: #F8F9FA;
-    --bg-card: #FFFFFF;
-    --bg-hover: #F1F3F5;
+    --bg-primary: #0F141B;
+    --bg-secondary: #141A21;
+    --bg-card: #1A2230;
+    --bg-hover: #223041;
 }
 
 /* =============================================================================
    Global Styles
    ============================================================================= */
+html, body, [data-testid="stAppViewContainer"] {
+    background: var(--bg-primary);
+    color: var(--gray-900);
+}
+
+[data-testid="stHeader"] {
+    background: transparent;
+}
+
+.stMarkdown, .stText, .stCaption, .stMarkdown p, .stMarkdown span {
+    color: var(--gray-900);
+}
 /* Hide streamlit footer */
 footer {visibility: hidden;}
 footer:after {
@@ -320,6 +332,14 @@ footer:after {
     border-left: 4px solid var(--gray-500);
 }
 
+/* Chat container wrapper */
+div[data-testid="stVerticalBlockBorderWrapper"] {
+    border-radius: 0.75rem;
+    border-color: var(--gray-200);
+    background: var(--bg-card);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+}
+
 /* =============================================================================
    Section Divider
    ============================================================================= */
@@ -363,9 +383,9 @@ class Colors:
     """Color constants for the design system."""
 
     # Primary colors
-    PRIMARY = "#0066CC"
-    PRIMARY_DARK = "#004C99"
-    PRIMARY_LIGHT = "#E6F0FF"
+    PRIMARY = "#3A7BD5"
+    PRIMARY_DARK = "#2D5FAA"
+    PRIMARY_LIGHT = "#1E2A3A"
 
     # Semantic colors
     SECONDARY = "#00A651"  # Green for success
@@ -373,12 +393,12 @@ class Colors:
     DANGER = "#DC3545"     # Red for errors
 
     # Gray scale
-    GRAY_50 = "#F8F9FA"
-    GRAY_100 = "#F1F3F5"
-    GRAY_200 = "#E9ECEF"
-    GRAY_500 = "#ADB5BD"
-    GRAY_700 = "#495057"
-    GRAY_900 = "#212529"
+    GRAY_50 = "#141A21"
+    GRAY_100 = "#1B232D"
+    GRAY_200 = "#263140"
+    GRAY_500 = "#9AA6B2"
+    GRAY_700 = "#D0D7DE"
+    GRAY_900 = "#F2F5F8"
 
 
 # Icons for use in the UI

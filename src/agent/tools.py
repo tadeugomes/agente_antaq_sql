@@ -62,7 +62,7 @@ async def list_available_tables() -> str:
         List of table names and descriptions
     """
     tables = [
-        "v_carga_oficial_antaq - Carga segundo metodologia oficial ANTAQ",
+        "v_carga_metodologia_oficial - Carga segundo metodologia oficial ANTAQ (VIEW PRINCIPAL)",
         "v_atracacao_validada - Atracação com FK validada",
         "v_carga_validada - Carga com relacionamentos validados",
         "instalacao_origem - Catálogo de instalações de origem",

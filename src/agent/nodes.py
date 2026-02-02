@@ -71,7 +71,7 @@ async def retrieve_examples_node(state: AgentState) -> Dict[str, Any]:
             question=question,
             top_k=3
         )
-    except Exception as e:
+    except Exception:
         # If RAG fails, continue without examples
         examples = []
 

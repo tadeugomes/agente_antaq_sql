@@ -36,6 +36,7 @@ class SQLValidator:
         errors = []
         warnings = []
         sanitized_query = query.strip()
+        sanitized_query = self._normalize_porto_like(sanitized_query)
 
         # Check for forbidden keywords
         forbidden_found = self._check_forbidden_keywords(sanitized_query)
@@ -78,6 +79,24 @@ class SQLValidator:
             "warnings": warnings,
             "sanitized_query": sanitized_query
         }
+
+    def _normalize_porto_like(self, query: str) -> str:
+        """
+        Normalize port name filters in LIKE patterns.
+
+        Example:
+        LOWER(porto_atracacao) LIKE '%porto de itaqui%' -> '%itaqui%'
+        """
+        pattern = re.compile(
+            r"(LIKE\s+')%?porto\s+(?:de|da|do)\s+([^%']+?)%?(')",
+            flags=re.IGNORECASE
+        )
+
+        def repl(match: re.Match) -> str:
+            name = match.group(2).strip()
+            return f"{match.group(1)}%{name}%{match.group(3)}"
+
+        return pattern.sub(repl, query)
 
     def _check_forbidden_keywords(self, query: str) -> List[str]:
         """Check for forbidden SQL keywords."""

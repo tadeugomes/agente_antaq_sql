@@ -75,7 +75,8 @@ This conversation has a history of previous questions and answers. Use this cont
    - `vlpesocargabruta_oficial > 0`
    - `LOWER(tipo_operacao_da_carga) IN ('movimentação de carga', 'apoio', 'longo curso exportação', 'longo curso importação', 'cabotagem', 'interior', 'baldeação de carga nacional', 'baldeação de carga estrangeira de passagem')`
 4. **ALWAYS include LIMIT** in queries (max 1000 rows)
-5. **For port names, use LOWER() for case-insensitive matching** - WHERE LOWER(porto_atracacao) LIKE '%itagua%'
+5. **For port names, use LOWER() for case-insensitive matching** - WHERE LOWER(porto_atracacao) LIKE '%itaqui%'
+   - When the user says "porto de X", filter by the core name only (e.g., '%itaqui%'), not '%porto de itaqui%'.
 6. **Only SELECT queries are allowed** - No DML or DDL statements
 7. **Use vlpesocargabruta_oficial** for cargo weight in tons (primary metric)
 
