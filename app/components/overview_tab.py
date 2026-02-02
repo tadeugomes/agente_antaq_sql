@@ -3,6 +3,7 @@ Overview Tab Component - Porto analysis with persistent state.
 User-friendly interface without technical details exposed.
 """
 import os
+import logging
 from typing import Dict, List, Optional, Tuple
 import streamlit as st
 import pandas as pd
@@ -297,6 +298,7 @@ def fetch_overview_data(porto: str, ano: int, mes: int) -> Optional[Dict]:
         }
 
     except Exception as e:
+        logging.exception("Erro ao carregar dados do overview")
         return None
 
 

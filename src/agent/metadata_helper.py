@@ -29,8 +29,8 @@ class MetadataHelper:
             self.client = client
 
         self.dataset_id = "antaqdados.br_antaq_estatistico_aquaviario"
-        self.metadata_project_id = os.getenv("GOOGLE_CLOUD_PROJECT", "saasimpacto")
-        self.metadata_dataset_id = f"{self.metadata_project_id}.antaq_metadados"
+        # Use the same dataset for metadata when available (dicionario_dados exists there)
+        self.metadata_dataset_id = os.getenv("ANTAQ_METADATA_DATASET", self.dataset_id)
 
         # Official data lag (45 days for ANTAQ official publication)
         self.official_publication_lag_days = 45
