@@ -9,7 +9,6 @@ from typing import Dict, Any, List
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 
 from ..bigquery.client import get_bigquery_client
-from ..bigquery.schema import get_schema_retriever
 from ..rag.retriever import ExampleRetriever
 from ..utils.validation import get_sql_validator
 from ..utils.formatting import format_results_for_llm
@@ -18,11 +17,17 @@ from .prompts import get_system_prompt, get_sql_generation_prompt, get_final_ans
 from .metadata_helper import get_metadata_helper
 
 
-# Initialize dependencies
-bq_client = get_bigquery_client()
-schema_retriever = get_schema_retriever()
+# Initialize dependencies (lazy to avoid credential issues at import time)
+bq_client = None
 sql_validator = get_sql_validator()
 metadata_helper = None  # Lazy initialization
+
+
+def _get_bq_client():
+    global bq_client
+    if bq_client is None:
+        bq_client = get_bigquery_client()
+    return bq_client
 
 
 def get_llm():
@@ -42,7 +47,7 @@ async def setup_schema_node(state: AgentState) -> Dict[str, Any]:
     if state.get("dataset_schema") is None:
         # Initialize metadata helper with BigQuery client
         if metadata_helper is None:
-            metadata_helper = get_metadata_helper(bq_client.client)
+            metadata_helper = get_metadata_helper(_get_bq_client().client)
 
         # Get schema from metadata helper (tries dicionario_dados first, then fallback)
         schema = metadata_helper.get_schema_for_prompt()
@@ -170,7 +175,7 @@ async def execute_sql_node(state: AgentState) -> Dict[str, Any]:
     sql_query = state["validated_sql"]
 
     try:
-        results = await bq_client.aquery(sql_query)
+        results = await _get_bq_client().aquery(sql_query)
         row_count = len(results) if results else 0
 
         result_message = f"Query executado com sucesso. {row_count} linhas retornadas."
