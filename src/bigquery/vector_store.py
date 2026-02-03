@@ -168,6 +168,12 @@ QA_EXAMPLES = [
         "difficulty": "intermediario"
     },
     {
+        "question": "Qual foi o total de carga do tipo carga geral em 2024?",
+        "sql": "SELECT SUM(vlpesocargabruta_oficial) AS carga_total FROM `antaqdados.br_antaq_estatistico_aquaviario.v_carga_metodologia_oficial` WHERE ano = 2024 AND isValidoMetodologiaANTAQ = 1 AND LOWER(natureza_carga) LIKE '%carga geral%'",
+        "category": "por_carga",
+        "difficulty": "intermediario"
+    },
+    {
         "question": "Qual foi o total de carga movimentado nos Portos do Paraná em agosto de 2024?",
         "sql": "SELECT SUM(vlpesocargabruta_oficial) AS carga_total FROM `antaqdados.br_antaq_estatistico_aquaviario.v_carga_metodologia_oficial` WHERE ano = 2024 AND mes = 8 AND isValidoMetodologiaANTAQ = 1 AND (LOWER(porto_atracacao) LIKE '%paranagua%' OR LOWER(porto_atracacao) LIKE '%antonina%')",
         "category": "por_porto",

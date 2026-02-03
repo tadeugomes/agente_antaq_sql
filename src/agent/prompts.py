@@ -65,6 +65,7 @@ This conversation has a history of previous questions and answers. Use this cont
 - `sentido` (STRING) - 'Embarcados' (Export) or 'Desembarcados' (Import)
 - `tipo_de_navegacao_da_atracacao` (STRING) - Navigation type
 - `cdmercadoria` (STRING) - Commodity code
+- `natureza_carga` (STRING) - Cargo type (e.g., granel, carga geral, conteinerizada)
 - `isValidoMetodologiaANTAQ` (INT64) - Validation flag (use = 1 for official data)
 
 ## RULES
@@ -82,8 +83,9 @@ This conversation has a history of previous questions and answers. Use this cont
    - When the user asks about "Portos do Paraná", include **Paranaguá** and **Antonina** in the filter.
 6. **For geographic region analysis, use `regiao_geografica` directly (no joins).**
    - Do NOT use `instalacao_destino`/`instalacao_origem` unless the user explicitly asks about destination/origin codes.
-7. **Only SELECT queries are allowed** - No DML or DDL statements
-8. **Use vlpesocargabruta_oficial** for cargo weight in tons (primary metric)
+7. **When the user asks for "tipo de carga", filter by `natureza_carga`.**
+8. **Only SELECT queries are allowed** - No DML or DDL statements
+9. **Use vlpesocargabruta_oficial** for cargo weight in tons (primary metric)
 
 ## OFFICIAL FILTER TEMPLATE
 

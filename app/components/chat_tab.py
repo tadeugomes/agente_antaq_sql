@@ -5,6 +5,7 @@ Optimized for memory - stores only metadata, not full dataframes.
 """
 import asyncio
 import logging
+import re
 from typing import Optional, Dict, Any
 import streamlit as st
 
@@ -17,6 +18,7 @@ from ..components.styles import Icons
 QUERY_RESULTS_CACHE_KEY = "query_results_cache"
 MAX_MESSAGES_IN_HISTORY = 50  # Limit chat history size
 MAX_CACHED_RESULTS = 10  # Keep only last N query results in memory
+YEAR_ONLY_PATTERN = re.compile(r"^\s*(20\d{2})\s*$")
 
 
 def get_results_cache() -> Dict[str, Any]:
@@ -64,6 +66,32 @@ def clear_results_cache() -> None:
     """Clear the results cache."""
     if QUERY_RESULTS_CACHE_KEY in st.session_state:
         del st.session_state[QUERY_RESULTS_CACHE_KEY]
+
+
+def _expand_year_only_prompt(prompt: str, messages: list[Dict[str, Any]]) -> str:
+    """
+    Expand a bare year (e.g., "2025") into a full question using the last user prompt.
+    """
+    match = YEAR_ONLY_PATTERN.match(prompt or "")
+    if not match:
+        return prompt
+
+    year = match.group(1)
+    last_user = None
+    for msg in reversed(messages):
+        if msg.get("role") == "user" and msg.get("content"):
+            last_user = msg["content"].strip()
+            break
+
+    if not last_user:
+        return f"Em {year}"
+
+    if re.search(r"\b20\d{2}\b", last_user):
+        return re.sub(r"\b20\d{2}\b", year, last_user)
+
+    if last_user.endswith("?"):
+        return f"{last_user[:-1]} em {year}?"
+    return f"{last_user} em {year}"
 
 
 def show_chat_tab():
@@ -165,6 +193,7 @@ def show_chat_tab():
 
             # Limit message history size before adding new message
             messages = SessionManager.get_chat_messages()
+            prompt = _expand_year_only_prompt(prompt, messages)
             if len(messages) >= MAX_MESSAGES_IN_HISTORY:
                 # Remove oldest messages (keep pairs of user/assistant)
                 messages_to_remove = (len(messages) - MAX_MESSAGES_IN_HISTORY + 2)

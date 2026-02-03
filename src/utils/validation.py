@@ -36,6 +36,7 @@ class SQLValidator:
         errors = []
         warnings = []
         sanitized_query = query.strip()
+        sanitized_query = self._normalize_tipo_carga(sanitized_query)
         sanitized_query = self._normalize_portos_do_parana(sanitized_query)
         sanitized_query = self._normalize_porto_like(sanitized_query)
         sanitized_query = self._normalize_terminal_like(sanitized_query)
@@ -127,6 +128,19 @@ class SQLValidator:
             return f"{match.group(1)}%{cleaned}%{match.group(3)}"
 
         return pattern.sub(repl, query)
+
+    def _normalize_tipo_carga(self, query: str) -> str:
+        """
+        Normalize common "tipo de carga" column names to natureza_carga.
+
+        Example:
+        SELECT tipo_carga -> SELECT natureza_carga
+        """
+        pattern = re.compile(
+            r"\b(tipo_carga|tipo_de_carga|tipo_da_carga)\b",
+            flags=re.IGNORECASE
+        )
+        return pattern.sub("natureza_carga", query)
 
     def _normalize_portos_do_parana(self, query: str) -> str:
         """
