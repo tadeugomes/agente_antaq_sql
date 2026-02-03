@@ -79,6 +79,7 @@ This conversation has a history of previous questions and answers. Use this cont
 5. **For port names, use LOWER() for case-insensitive matching** - WHERE LOWER(porto_atracacao) LIKE '%itaqui%'
    - When the user says "porto de X", filter by the core name only (e.g., '%itaqui%'), not '%porto de itaqui%'.
    - When the user asks about "terminais" of a port, use LIKE '%<porto>%' to include terminals such as "DP World Santos".
+   - When the user asks about "Portos do Paraná", include **Paranaguá** and **Antonina** in the filter.
 6. **For geographic region analysis, use `regiao_geografica` directly (no joins).**
    - Do NOT use `instalacao_destino`/`instalacao_origem` unless the user explicitly asks about destination/origin codes.
 7. **Only SELECT queries are allowed** - No DML or DDL statements

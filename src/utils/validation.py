@@ -36,6 +36,7 @@ class SQLValidator:
         errors = []
         warnings = []
         sanitized_query = query.strip()
+        sanitized_query = self._normalize_portos_do_parana(sanitized_query)
         sanitized_query = self._normalize_porto_like(sanitized_query)
         sanitized_query = self._normalize_terminal_like(sanitized_query)
 
@@ -124,6 +125,34 @@ class SQLValidator:
             if not cleaned:
                 return match.group(0)
             return f"{match.group(1)}%{cleaned}%{match.group(3)}"
+
+        return pattern.sub(repl, query)
+
+    def _normalize_portos_do_parana(self, query: str) -> str:
+        """
+        Normalize "Portos do Paraná" queries to include Paranaguá and Antonina.
+
+        Example:
+        LOWER(porto_atracacao) LIKE '%portos do parana%' ->
+        (LOWER(porto_atracacao) LIKE '%paranagua%' OR LOWER(porto_atracacao) LIKE '%antonina%')
+        """
+        pattern = re.compile(
+            r"(?P<field>(?:LOWER\()?\s*[\w\.]*porto_atracacao\)?)\s+LIKE\s+'(?P<value>[^']+)'",
+            flags=re.IGNORECASE
+        )
+
+        def repl(match: re.Match) -> str:
+            field_expr = match.group("field").strip()
+            value_raw = match.group("value")
+            value_norm = value_raw.lower().replace("á", "a").replace("ã", "a")
+            if re.search(r"\bportos?\s+do\s+parana\b", value_norm):
+                if not field_expr.lower().startswith("lower("):
+                    field_expr = f"LOWER({field_expr})"
+                return (
+                    f"({field_expr} LIKE '%paranagua%' "
+                    f"OR {field_expr} LIKE '%antonina%')"
+                )
+            return match.group(0)
 
         return pattern.sub(repl, query)
 
