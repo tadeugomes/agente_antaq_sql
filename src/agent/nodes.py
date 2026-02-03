@@ -189,6 +189,7 @@ async def execute_sql_node(state: AgentState) -> Dict[str, Any]:
     except Exception as e:
         error_message = f"Erro ao executar query: {str(e)}"
         import logging
+        logging.error("SQL com erro no BigQuery: %s", sql_query)
         logging.exception("Erro ao executar query no BigQuery")
         return {
             "query_results": None,
@@ -202,6 +203,16 @@ async def generate_final_answer_node(state: AgentState) -> Dict[str, Any]:
     """
     Generate natural language answer from query results.
     """
+    if state.get("sql_error"):
+        friendly_error = (
+            "Ocorreu um erro ao consultar os dados. "
+            "Tente novamente ou ajuste o período/porto."
+        )
+        return {
+            "final_answer": friendly_error,
+            "messages": [AIMessage(content=state.get("sql_error", ""))]
+        }
+
     question = state.get("question") or state["messages"][-1].content
     results = state.get("query_results", [])
     sql_query = state.get("validated_sql", "")

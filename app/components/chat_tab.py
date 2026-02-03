@@ -195,49 +195,79 @@ def show_chat_tab():
                         sql = result.get("validated_sql", "")
                         results = result.get("query_results", [])
                         row_count = len(results) if results else 0
+                        sql_error = result.get("sql_error")
                         answer = result.get("final_answer", "") or ""
 
-                        if not answer.strip():
+                        if sql_error:
+                            error_message = (
+                                "Ocorreu um erro ao consultar os dados. "
+                                "Tente novamente ou ajuste o período/porto."
+                            )
+                            info_box("Erro", error_message, "error")
+
+                            detail_text = sql_error
+                            if sql:
+                                detail_text = f"{sql_error}\n\nSQL:\n{sql}"
+
+                            with st.expander("Ver detalhes do erro"):
+                                st.code(detail_text, language="text")
+
+                            messages = SessionManager.get_chat_messages()
+                            message_idx = len(messages)
+
+                            assistant_message = {
+                                "role": "assistant",
+                                "content": error_message,
+                                "has_results": False,
+                                "row_count": 0,
+                                "error_detail": sql_error,
+                                "error_trace": sql or ""
+                            }
+
+                            SessionManager.add_chat_message("assistant", error_message)
+                            st.session_state[SessionManager.CHAT_MESSAGES_KEY][-1] = assistant_message
+                        else:
+                            if not answer.strip():
+                                if results:
+                                    answer = f"Encontrei {row_count} resultados para sua consulta."
+                                else:
+                                    answer = "Nenhum dado encontrado para o critério informado."
+
+                            # Display answer
+                            st.markdown(answer)
+
+                            # Display SQL only in debug mode
+                            if sql and SessionManager.is_debug_mode():
+                                with st.expander(f"{Icons.SEARCH} SQL Gerado"):
+                                    st.code(sql, language="sql")
+
+                            # Display results if enabled
+                            if results and SessionManager.show_results():
+                                with st.expander(f"{Icons.CHART} Resultados ({row_count} linhas)"):
+                                    st.dataframe(results)
+
+                            # Get current message index
+                            messages = SessionManager.get_chat_messages()
+                            message_idx = len(messages)  # Index of the message we're about to add
+
+                            # Add assistant message to history (without full results)
+                            assistant_message = {
+                                "role": "assistant",
+                                "content": answer,
+                                "has_results": bool(results),
+                                "row_count": row_count
+                            }
+
+                            if sql:
+                                assistant_message["sql"] = sql
+
+                            SessionManager.add_chat_message("assistant", answer)
+                            # Update with full message data
+                            st.session_state[SessionManager.CHAT_MESSAGES_KEY][-1] = assistant_message
+
+                            # Save results to separate cache
                             if results:
-                                answer = f"Encontrei {row_count} resultados para sua consulta."
-                            else:
-                                answer = "Nenhum dado encontrado para o critério informado."
-
-                        # Display answer
-                        st.markdown(answer)
-
-                        # Display SQL only in debug mode
-                        if sql and SessionManager.is_debug_mode():
-                            with st.expander(f"{Icons.SEARCH} SQL Gerado"):
-                                st.code(sql, language="sql")
-
-                        # Display results if enabled
-                        if results and SessionManager.show_results():
-                            with st.expander(f"{Icons.CHART} Resultados ({row_count} linhas)"):
-                                st.dataframe(results)
-
-                        # Get current message index
-                        messages = SessionManager.get_chat_messages()
-                        message_idx = len(messages)  # Index of the message we're about to add
-
-                        # Add assistant message to history (without full results)
-                        assistant_message = {
-                            "role": "assistant",
-                            "content": answer,
-                            "has_results": bool(results),
-                            "row_count": row_count
-                        }
-
-                        if sql:
-                            assistant_message["sql"] = sql
-
-                        SessionManager.add_chat_message("assistant", answer)
-                        # Update with full message data
-                        st.session_state[SessionManager.CHAT_MESSAGES_KEY][-1] = assistant_message
-
-                        # Save results to separate cache
-                        if results:
-                            save_result_to_cache(message_idx, results, sql)
+                                save_result_to_cache(message_idx, results, sql)
 
                     except Exception as e:
                         import traceback

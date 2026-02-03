@@ -59,6 +59,7 @@ This conversation has a history of previous questions and answers. Use this cont
 - `mes` (INT64) - Month (1-12)
 - `porto_atracacao` (STRING) - Port name
 - `uf` (STRING) - State
+- `regiao_geografica` (STRING) - Geographic region (Norte, Nordeste, etc.)
 - `vlpesocargabruta_oficial` (FLOAT) - Gross cargo weight in tons - MAIN METRIC
 - `qtcarga_oficial` (FLOAT) - Cargo quantity
 - `sentido` (STRING) - 'Embarcados' (Export) or 'Desembarcados' (Import)
@@ -78,8 +79,10 @@ This conversation has a history of previous questions and answers. Use this cont
 5. **For port names, use LOWER() for case-insensitive matching** - WHERE LOWER(porto_atracacao) LIKE '%itaqui%'
    - When the user says "porto de X", filter by the core name only (e.g., '%itaqui%'), not '%porto de itaqui%'.
    - When the user asks about "terminais" of a port, use LIKE '%<porto>%' to include terminals such as "DP World Santos".
-6. **Only SELECT queries are allowed** - No DML or DDL statements
-7. **Use vlpesocargabruta_oficial** for cargo weight in tons (primary metric)
+6. **For geographic region analysis, use `regiao_geografica` directly (no joins).**
+   - Do NOT use `instalacao_destino`/`instalacao_origem` unless the user explicitly asks about destination/origin codes.
+7. **Only SELECT queries are allowed** - No DML or DDL statements
+8. **Use vlpesocargabruta_oficial** for cargo weight in tons (primary metric)
 
 ## OFFICIAL FILTER TEMPLATE
 

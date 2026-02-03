@@ -166,5 +166,11 @@ QA_EXAMPLES = [
         "sql": "SELECT uf, SUM(vlpesocargabruta_oficial) AS carga_total FROM `antaqdados.br_antaq_estatistico_aquaviario.v_carga_metodologia_oficial` WHERE ano = 2024 AND isValidoMetodologiaANTAQ = 1 GROUP BY uf ORDER BY carga_total DESC",
         "category": "por_regiao",
         "difficulty": "intermediario"
+    },
+    {
+        "question": "Compare exportações e importações por região geográfica em 2024",
+        "sql": "SELECT regiao_geografica, sentido, SUM(vlpesocargabruta_oficial) AS carga_total FROM `antaqdados.br_antaq_estatistico_aquaviario.v_carga_metodologia_oficial` WHERE ano = 2024 AND isValidoMetodologiaANTAQ = 1 AND sentido IN ('Embarcados', 'Desembarcados') GROUP BY regiao_geografica, sentido ORDER BY regiao_geografica, sentido",
+        "category": "por_regiao",
+        "difficulty": "intermediario"
     }
 ]
