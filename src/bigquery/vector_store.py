@@ -150,6 +150,12 @@ QA_EXAMPLES = [
         "difficulty": "intermediario"
     },
     {
+        "question": "Qual foi a movimentação total dos terminais de Santos em agosto de 2025?",
+        "sql": "SELECT SUM(vlpesocargabruta_oficial) AS carga_total FROM `antaqdados.br_antaq_estatistico_aquaviario.v_carga_metodologia_oficial` WHERE ano = 2025 AND mes = 8 AND isValidoMetodologiaANTAQ = 1 AND LOWER(porto_atracacao) LIKE '%santos%'",
+        "category": "por_porto",
+        "difficulty": "intermediario"
+    },
+    {
         "question": "Quais são as 10 principais mercadorias movimentadas em 2024?",
         "sql": "SELECT cdmercadoria, SUM(vlpesocargabruta_oficial) AS carga_total FROM `antaqdados.br_antaq_estatistico_aquaviario.v_carga_metodologia_oficial` WHERE ano = 2024 AND isValidoMetodologiaANTAQ = 1 GROUP BY cdmercadoria ORDER BY carga_total DESC LIMIT 10",
         "category": "por_mercadoria",

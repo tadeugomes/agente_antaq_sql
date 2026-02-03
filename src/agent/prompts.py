@@ -77,6 +77,7 @@ This conversation has a history of previous questions and answers. Use this cont
 4. **ALWAYS include LIMIT** in queries (max 1000 rows)
 5. **For port names, use LOWER() for case-insensitive matching** - WHERE LOWER(porto_atracacao) LIKE '%itaqui%'
    - When the user says "porto de X", filter by the core name only (e.g., '%itaqui%'), not '%porto de itaqui%'.
+   - When the user asks about "terminais" of a port, use LIKE '%<porto>%' to include terminals such as "DP World Santos".
 6. **Only SELECT queries are allowed** - No DML or DDL statements
 7. **Use vlpesocargabruta_oficial** for cargo weight in tons (primary metric)
 

@@ -188,6 +188,8 @@ async def execute_sql_node(state: AgentState) -> Dict[str, Any]:
 
     except Exception as e:
         error_message = f"Erro ao executar query: {str(e)}"
+        import logging
+        logging.exception("Erro ao executar query no BigQuery")
         return {
             "query_results": None,
             "row_count": 0,

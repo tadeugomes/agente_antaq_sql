@@ -4,6 +4,7 @@ No technical SQL exposed to user by default.
 Optimized for memory - stores only metadata, not full dataframes.
 """
 import asyncio
+import logging
 from typing import Optional, Dict, Any
 import streamlit as st
 
@@ -121,6 +122,13 @@ def show_chat_tab():
                         with st.expander(f"{Icons.SEARCH} SQL Gerado"):
                             st.code(message["sql"], language="sql")
 
+                    # Show error details when available
+                    if message.get("error_detail") or message.get("error_trace"):
+                        with st.expander("Ver detalhes do erro"):
+                            detail = message.get("error_detail", "")
+                            trace = message.get("error_trace", "")
+                            st.code(f"{detail}\n\n{trace}".strip(), language="text")
+
                     # Show results if enabled - fetch from cache
                     if message.get("has_results") and SessionManager.show_results():
                         cached = get_cached_result(idx)
@@ -233,21 +241,33 @@ def show_chat_tab():
 
                     except Exception as e:
                         import traceback
+                        error_detail = str(e)
+                        error_trace = traceback.format_exc()
+                        logging.exception(
+                            "Erro ao executar consulta no chat",
+                            extra={
+                                "prompt_len": len(prompt) if prompt else 0
+                            }
+                        )
+                        print(f"[chat] erro: {error_detail}\n{error_trace}")
                         error_message = (
                             "Ocorreu um erro ao consultar os dados. "
                             "Tente novamente ou ajuste o período/porto."
                         )
-                        error_detail = str(e)
 
                         # Show user-friendly error
                         info_box("Erro", error_message, "error")
 
                         # Show error details in expander
                         with st.expander("Ver detalhes do erro"):
-                            st.code(f"{error_detail}\n\n{traceback.format_exc()}", language="text")
+                            st.code(f"{error_detail}\n\n{error_trace}", language="text")
 
                         # Add error to history
                         SessionManager.add_chat_message("assistant", error_message)
+                        st.session_state[SessionManager.CHAT_MESSAGES_KEY][-1].update({
+                            "error_detail": error_detail,
+                            "error_trace": error_trace
+                        })
 
             st.session_state["_clear_pergunta"] = True
             st.rerun()

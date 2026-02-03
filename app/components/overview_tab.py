@@ -4,6 +4,7 @@ User-friendly interface without technical details exposed.
 """
 import os
 import logging
+import traceback
 from typing import Dict, List, Optional, Tuple
 import streamlit as st
 import pandas as pd
@@ -55,7 +56,7 @@ def get_latest_data_period() -> Optional[Dict[str, int]]:
                 "ultima_data": str(result.iloc[0]['ultima_data'])
             }
     except Exception:
-        pass
+        logging.exception("Erro ao buscar periodo mais recente do overview")
 
     return None
 
@@ -85,7 +86,7 @@ def get_available_portos() -> List[str]:
             # Add "Brasil" as first option for aggregated analysis
             return ["Brasil"] + portos
     except Exception:
-        pass
+        logging.exception("Erro ao buscar lista de portos do overview")
 
     return ["Brasil", "Santos", "Itaguaí", "Itaqui", "Paranaguá", "Rio de Janeiro", "Rio Grande"]
 
@@ -298,7 +299,12 @@ def fetch_overview_data(porto: str, ano: int, mes: int) -> Optional[Dict]:
         }
 
     except Exception as e:
+        error_detail = str(e)
+        error_trace = traceback.format_exc()
         logging.exception("Erro ao carregar dados do overview")
+        print(f"[overview] erro: {error_detail}\n{error_trace}")
+        st.session_state["overview_error_detail"] = error_detail
+        st.session_state["overview_error_trace"] = error_trace
         return None
 
 
@@ -486,6 +492,11 @@ def show_overview_form():
                     "Não foi possível carregar os dados. Tente novamente.",
                     "error"
                 )
+                detail = st.session_state.get("overview_error_detail")
+                trace = st.session_state.get("overview_error_trace")
+                if detail or trace:
+                    with st.expander("Ver detalhes do erro"):
+                        st.code(f"{detail or ''}\n\n{trace or ''}".strip(), language="text")
 
 
 def show_overview_results(params: Dict, data: Dict) -> None:

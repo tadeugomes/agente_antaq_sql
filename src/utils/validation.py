@@ -37,6 +37,7 @@ class SQLValidator:
         warnings = []
         sanitized_query = query.strip()
         sanitized_query = self._normalize_porto_like(sanitized_query)
+        sanitized_query = self._normalize_terminal_like(sanitized_query)
 
         # Check for forbidden keywords
         forbidden_found = self._check_forbidden_keywords(sanitized_query)
@@ -95,6 +96,34 @@ class SQLValidator:
         def repl(match: re.Match) -> str:
             name = match.group(2).strip()
             return f"{match.group(1)}%{name}%{match.group(3)}"
+
+        return pattern.sub(repl, query)
+
+    def _normalize_terminal_like(self, query: str) -> str:
+        """
+        Normalize terminal-related filters in LIKE patterns for porto_atracacao.
+
+        Example:
+        LOWER(porto_atracacao) LIKE '%terminais de santos%' -> '%santos%'
+        """
+        pattern = re.compile(
+            r"((?:LOWER\()?\s*[\w\.]*porto_atracacao\)?\s+LIKE\s+')([^']+)(')",
+            flags=re.IGNORECASE
+        )
+
+        def repl(match: re.Match) -> str:
+            raw = match.group(2)
+            cleaned = re.sub(
+                r"\b(terminal(?:es)?|porto|portuário(?:s)?)\b",
+                " ",
+                raw,
+                flags=re.IGNORECASE
+            )
+            cleaned = re.sub(r"\b(?:de|da|do)\b", " ", cleaned, flags=re.IGNORECASE)
+            cleaned = " ".join(cleaned.split()).strip("%")
+            if not cleaned:
+                return match.group(0)
+            return f"{match.group(1)}%{cleaned}%{match.group(3)}"
 
         return pattern.sub(repl, query)
 
