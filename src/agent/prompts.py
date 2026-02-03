@@ -81,6 +81,8 @@ This conversation has a history of previous questions and answers. Use this cont
    - When the user says "porto de X", filter by the core name only (e.g., '%itaqui%'), not '%porto de itaqui%'.
    - When the user asks about "terminais" of a port, use LIKE '%<porto>%' to include terminals such as "DP World Santos".
    - When the user asks about "Portos do Paraná", include **Paranaguá** and **Antonina** in the filter.
+   - **Accent-insensitive match (recommended):** use
+     `REGEXP_REPLACE(NORMALIZE(LOWER(porto_atracacao), NFD), r'\\pM', '') LIKE '%paranagua%'`.
 6. **For geographic region analysis, use `regiao_geografica` directly (no joins).**
    - Do NOT use `instalacao_destino`/`instalacao_origem` unless the user explicitly asks about destination/origin codes.
 7. **When the user asks for "tipo de carga", filter by `natureza_carga`.**

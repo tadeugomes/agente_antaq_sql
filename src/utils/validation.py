@@ -2,6 +2,7 @@
 SQL validation and security utilities.
 """
 import re
+import unicodedata
 from typing import Dict, List, Any
 
 
@@ -40,6 +41,7 @@ class SQLValidator:
         sanitized_query = self._normalize_portos_do_parana(sanitized_query)
         sanitized_query = self._normalize_porto_like(sanitized_query)
         sanitized_query = self._normalize_terminal_like(sanitized_query)
+        sanitized_query = self._normalize_porto_like_accent_insensitive(sanitized_query)
 
         # Check for forbidden keywords
         forbidden_found = self._check_forbidden_keywords(sanitized_query)
@@ -167,6 +169,42 @@ class SQLValidator:
                     f"OR {field_expr} LIKE '%antonina%')"
                 )
             return match.group(0)
+
+        return pattern.sub(repl, query)
+
+    def _normalize_porto_like_accent_insensitive(self, query: str) -> str:
+        """
+        Make porto_atracacao LIKE filters accent-insensitive.
+
+        Example:
+        LOWER(porto_atracacao) LIKE '%paranagua%' ->
+        REGEXP_REPLACE(NORMALIZE(LOWER(porto_atracacao), NFD), r'\\pM', '') LIKE '%paranagua%'
+        """
+        pattern = re.compile(
+            r"(?P<field>(?:LOWER\()?\s*[\w\.]*porto_atracacao\)?)\s+LIKE\s+'(?P<value>[^']*)'",
+            flags=re.IGNORECASE
+        )
+
+        def strip_accents(text: str) -> str:
+            return "".join(
+                ch for ch in unicodedata.normalize("NFD", text)
+                if unicodedata.category(ch) != "Mn"
+            )
+
+        def repl(match: re.Match) -> str:
+            field_expr = match.group("field").strip()
+            value = match.group("value")
+
+            if field_expr.lower().startswith("lower(") and field_expr.endswith(")"):
+                field_expr = field_expr[6:-1]
+
+            normalized_field = (
+                "REGEXP_REPLACE(NORMALIZE(LOWER("
+                + field_expr
+                + "), NFD), r'\\pM', '')"
+            )
+            normalized_value = strip_accents(value)
+            return f"{normalized_field} LIKE '{normalized_value}'"
 
         return pattern.sub(repl, query)
 
